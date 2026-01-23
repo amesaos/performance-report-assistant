@@ -5,7 +5,7 @@
  * Flujo: Webhook → Code → OpenAI → HTTP Request (WhatsApp) → HTTP Request (Slack)
  * 
  * Entrada: Webhook de Evolution API con mensaje entrante
- * Salida: { mensaje, nombre, telefono }
+ * Salida: { mensaje, nombre, telefono, empresa }
  */
 
 // Filtrar solo mensajes entrantes (no enviados por nosotros)
@@ -24,18 +24,18 @@ const mensaje = data.body?.data?.message?.conversation || "";
 const nombre = data.body?.data?.pushName || "Cliente";
 const lid = data.body?.data?.key?.remoteJid || "";
 
-// 📱 DIRECTORIO: mapea nombre → teléfono
+// 📱 DIRECTORIO: mapea nombre → { telefono, empresa }
 // Agrega más clientes aquí
 const DIRECTORIO = {
-  "Alejandro Mesa Osorio": "573174426388"
+  "Alejandro Mesa Osorio": { telefono: "573174426388", empresa: "QKapital Group" }
   // Agrega más clientes en el formato:
-  // "Nombre del Cliente": "57XXXXXXXXXX"
+  // "Nombre del Contacto": { telefono: "57XXXXXXXXXX", empresa: "Nombre Empresa" }
 };
 
 // Buscar por nombre
-const telefono = DIRECTORIO[nombre] || null;
+const cliente = DIRECTORIO[nombre] || null;
 
-if (!telefono) {
+if (!cliente) {
   // Cliente no registrado - ignorar
   return [];
 }
@@ -44,6 +44,7 @@ return [{
   json: {
     mensaje: mensaje,
     nombre: nombre,
-    telefono: telefono
+    telefono: cliente.telefono,
+    empresa: cliente.empresa
   }
 }];
