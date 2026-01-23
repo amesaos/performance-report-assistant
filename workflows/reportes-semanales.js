@@ -98,7 +98,7 @@ try {
   const rowsFueraHorario = responseFueraHorario.data && responseFueraHorario.data.rows ? responseFueraHorario.data.rows : [];
 
   if (rowsMetricas.length === 0 || !rowsMetricas[0][0]) {
-    mensaje = "Hola " + nombre + "! 👋\n\n📅 Período: " + periodoTexto + "\n\nEsta semana estuvimos analizando tus métricas. ¿Te gustaría que revisemos juntos los resultados? 💬";
+    mensaje = "Hola " + nombre + "! 👋\n\n📅 *Período*: " + periodoTexto + "\n\nEsta semana estuvimos analizando tus métricas. ¿Te gustaría que revisemos juntos los resultados? 💬";
   } else {
     const leads_gestionados = rowsMetricas[0][0];
     const contactos_exitosos = rowsMetricas[0][1];
@@ -111,25 +111,25 @@ try {
     const asistente_ai_pct = contactos_exitosos > 0 ? Math.round(visitas_agendadas * 100 / contactos_exitosos) : 0;
 
     if (!leads_gestionados || leads_gestionados === 0) {
-      mensaje = "Hola " + nombre + "! 👋\n\n📅 Período: " + periodoTexto + "\n\nEsta semana no registramos nuevos leads. ¿Todo bien con la campaña? Estamos aquí para ayudarte. 💬";
+      mensaje = "Hola " + nombre + "! 👋\n\n📅 *Período*: " + periodoTexto + "\n\nEsta semana no registramos nuevos leads. ¿Todo bien con la campaña? Estamos aquí para ayudarte. 💬";
     } else {
       mensaje = "Hola " + nombre + "! 👋\n\n";
       mensaje += "📊 *Reporte Semanal de Performance*\n";
-      mensaje += "📅 *Período:* " + periodoTexto + "\n\n";
+      mensaje += "📅 *Período*: " + periodoTexto + "\n\n";
       mensaje += "Esta semana tu operación superó todos los benchmarks. Aquí el resumen clave:\n\n";
-      mensaje += "👥 Leads Atendidos: " + leads_gestionados + " potenciales clientes gestionados.\n";
-      mensaje += "📅 Visitas Agendadas: " + (visitas_agendadas || 0) + " citas programadas.";
+      mensaje += "👥 *Leads Atendidos*: " + leads_gestionados + " potenciales clientes gestionados.\n";
+      mensaje += "📅 *Visitas Agendadas*: " + (visitas_agendadas || 0) + " citas programadas.";
 
       if (leads_fuera_horario > 0) {
-        mensaje += "\n\n🌙 Atención Fuera de Horario: " + leads_fuera_horario + " leads atendidos entre 6pm y 8am. ¡Tu asistente AI trabaja 24/7!";
+        mensaje += "\n\n🌙 *Atención Fuera de Horario*: " + leads_fuera_horario + " leads atendidos entre 6pm y 8am. ¡Tu asistente AI trabaja 24/7!";
       }
 
       if (tiempo_respuesta && tiempo_respuesta < avg_tiempo_respuesta) {
-        mensaje += "\n\n⚡ Tiempo Promedio de Respuesta: " + tiempo_respuesta + " segundos. En promedio nuestros clientes tuvieron " + avg_tiempo_respuesta + "s. ¡Atención inmediata! 🚀";
+        mensaje += "\n\n⚡ *Tiempo Promedio de Respuesta*: " + tiempo_respuesta + " segundos. En promedio nuestros clientes tuvieron " + avg_tiempo_respuesta + "s. ¡Atención inmediata! 🚀";
       }
 
       if (asistente_ai_pct && asistente_ai_pct > avg_asistente_ai) {
-        mensaje += "\n\n🤖 Tu asistente AI agendó al " + asistente_ai_pct + "% de los leads que respondieron. (En promedio nuestros clientes tuvieron " + avg_asistente_ai + "%. ¡Estás convirtiendo muchísimo más!)";
+        mensaje += "\n\n🤖 Tu asistente AI *agendó al " + asistente_ai_pct + "% de los leads* que respondieron. (En promedio nuestros clientes tuvieron " + avg_asistente_ai + "%. ¡Estás convirtiendo muchísimo más!)";
       }
 
       var comparativos = [];
@@ -152,7 +152,7 @@ try {
     }
   }
 } catch (error) {
-  mensaje = "Hola " + nombre + "! 👋\n\n📅 Período: " + periodoTexto + "\n\nEsta semana estuvimos analizando tus métricas. ¿Te gustaría que revisemos juntos los resultados? 💬";
+  mensaje = "Hola " + nombre + "! 👋\n\n📅 *Período*: " + periodoTexto + "\n\nEsta semana estuvimos analizando tus métricas. ¿Te gustaría que revisemos juntos los resultados? 💬";
 }
 
 return [{ json: { nombre: nombre, telefono: telefono, enterprise_id: enterpriseId, mensaje: mensaje } }];
