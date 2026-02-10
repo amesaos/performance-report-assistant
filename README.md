@@ -1,214 +1,109 @@
-# 📱 WhatsApp Automation con n8n, Evolution API y Metabase
+# Performance Report Assistant
 
-Sistema automatizado para enviar reportes semanales de performance por WhatsApp y responder automáticamente con un agente de IA.
+Sistema de automatización WhatsApp para LaHaus AI usando n8n, Evolution API y Metabase.
 
-## 🎯 Funcionalidades
+## 🚀 Funcionalidades
 
-1. **Reportes Semanales Automáticos**: Envía métricas de performance personalizadas a cada cliente
-2. **Agente AI Respondedor**: Responde automáticamente cuando un cliente contesta
-3. **Notificaciones a Slack**: Alerta cuando un cliente responde
-4. **Directorio de Clientes**: Administra clientes desde n8n Data Tables
+### 1. Reportes Semanales de Performance
+Envía automáticamente reportes de métricas a cada cliente vía WhatsApp:
+- Leads atendidos
+- Visitas agendadas
+- Atención fuera de horario
+- Tiempo promedio de respuesta
+- Efectividad del asistente AI
 
-## 🏗️ Arquitectura
+### 2. AI Responder con Clasificador LLM
+Responde mensajes de clientes de forma inteligente:
+- **Preguntas sobre datos**: Consulta Metabase y responde con información de visitas/leads
+- **Feedback negativo**: Responde automáticamente con disculpa y notifica a Slack
+- **Otros mensajes**: Solo notifica a Slack sin responder
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Schedule      │────▶│   n8n           │────▶│  Evolution API  │
-│   Trigger       │     │   Workflow      │     │  (WhatsApp)     │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
-                        ┌─────────────────┐
-                        │   Metabase      │
-                        │   (Datos)       │
-                        └─────────────────┘
-```
+### 3. Recordatorio de Visitas
+Envía recordatorios manuales con:
+- Próximas visitas (4 días)
+- Resumen de visitas pasadas (7 días)
+- Pregunta de seguimiento
 
-## 📋 Requisitos
-
-- Docker Desktop
-- Node.js (opcional, para desarrollo)
-- Cuenta de WhatsApp Business
-- Acceso a Metabase
-- Cuenta de Slack (opcional)
-
-## 🚀 Instalación
-
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/amesaos/whatsapp-automation-n8n.git
-cd whatsapp-automation-n8n
-```
-
-### 2. Iniciar Evolution API
-
-```bash
-cd docker
-docker-compose up -d
-```
-
-### 3. Iniciar n8n
-
-```bash
-docker run -d --name n8n \
-  -p 5678:5678 \
-  -v n8n_data:/home/node/.n8n \
-  --add-host=host.docker.internal:host-gateway \
-  n8nio/n8n
-```
-
-### 4. Configurar ngrok (para desarrollo local)
-
-```bash
-ngrok http 8080
-```
-
-Copia la URL generada (ej: `https://xxxx.ngrok-free.dev`)
-
-### 5. Crear instancia de WhatsApp
-
-```bash
-curl -X POST "http://localhost:8080/instance/create" \
-  -H "Content-Type: application/json" \
-  -H "apikey: MiClaveSecreta123" \
-  -d '{"instanceName": "mi_empresa", "qrcode": true}'
-```
-
-### 6. Escanear QR
-
-Abre http://localhost:8080/manager y escanea el código QR con WhatsApp
+### 4. Solicitud de Feedback
+Envía mensaje pidiendo opinión sobre el servicio de LaHaus AI.
 
 ## 📁 Estructura del Proyecto
-
 ```
-whatsapp-automation-n8n/
+performance-report-assistant/
 ├── README.md
+├── .gitignore
 ├── docker/
 │   └── docker-compose.yml
 ├── workflows/
 │   ├── reportes-semanales.js
-│   └── ai-responder.js
-├── docs/
-│   ├── configuracion-evolution-api.md
-│   ├── configuracion-n8n.md
-│   └── configuracion-metabase.md
-└── examples/
-    └── mensaje-ejemplo.md
+│   ├── ai-responder.js
+│   ├── recordatorio-visitas.js
+│   └── feedback-request.js
+└── docs/
+    ├── configuracion-evolution-api.md
+    ├── configuracion-n8n.md
+    ├── configuracion-metabase.md
+    └── system-prompt-ai.md
 ```
 
-## ⚙️ Configuración
+## 🛠️ Tecnologías
 
-### Variables de Entorno
+- **n8n**: Plataforma de automatización de workflows
+- **Evolution API**: API para WhatsApp
+- **Metabase**: Consulta de datos de visitas y leads
+- **OpenAI GPT-4o-mini**: Clasificación de mensajes y respuestas inteligentes
+- **Slack**: Notificaciones al equipo
+- **Docker**: Contenedores para Evolution API y n8n
+- **ngrok**: Túnel para webhooks
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `METABASE_URL` | URL de Metabase | `https://data.lahaus.com` |
-| `METABASE_API_KEY` | API Key de Metabase | `mb_xxx...` |
-| `EVOLUTION_API_KEY` | API Key de Evolution | `MiClaveSecreta123` |
-| `NGROK_URL` | URL pública de ngrok | `https://xxx.ngrok-free.dev` |
+## 📊 Flujos de n8n
 
-### Promedios de Referencia
-
-Edita estos valores en el código según tus datos históricos:
-
-```javascript
-const avg_contactabilidad = 32;    // %
-const avg_agendamiento = 7;        // %
-const avg_asistente_ai = 22;       // %
-const avg_tiempo_respuesta = 6;    // segundos
+### Flujo 1: Reportes Semanales
+```
+Schedule Trigger → Get row(s) → Loop Over Items → Code (Query Metabase) → Code (Mensaje) → HTTP Request (WhatsApp) → Wait
 ```
 
-## 📊 Workflows
-
-### 1. Reportes Semanales
-
-**Flujo:**
+### Flujo 2: AI Responder
 ```
-Schedule Trigger → Get row(s) → Loop Over Items → Code → HTTP Request → Wait
-```
-
-**Frecuencia:** Viernes a las 12:00 PM
-
-### 2. AI Responder
-
-**Flujo:**
-```
-Webhook → Code → OpenAI → HTTP Request (WhatsApp) → HTTP Request (Slack)
+Webhook → Get row(s) → Code → OpenAI Clasificador → Parsear → IF Pregunta
+    → (true) → Query Metabase → OpenAI Responder → WhatsApp → Slack
+    → (false) → IF Negativo
+        → (true) → WhatsApp (disculpa) → Slack
+        → (false) → Slack
 ```
 
-**Trigger:** Mensaje entrante de WhatsApp
-
-## 📱 Ejemplo de Mensaje
-
+### Flujo 3: Recordatorio Visitas
 ```
-Hola QKapital Group! 👋
-
-📊 *Reporte Semanal de Performance*
-📅 *Período:* 16 de enero al 22 de enero
-
-Esta semana tu operación superó todos los benchmarks. Aquí el resumen clave:
-
-👥 Leads Atendidos: 70 potenciales clientes gestionados.
-📅 Visitas Agendadas: 7 citas programadas.
-
-🌙 Atención Fuera de Horario: 12 leads atendidos entre 6pm y 8am. ¡Tu asistente AI trabaja 24/7!
-
-⚡ Tiempo Promedio de Respuesta: 3.9 segundos. En promedio nuestros clientes tuvieron 6s. ¡Atención inmediata! 🚀
-
-🤖 Tu asistente AI agendó al 36% de los leads que respondieron. (En promedio nuestros clientes tuvieron 22%. ¡Estás convirtiendo muchísimo más!)
-
-📊 Comparativo vs Promedio:
-✅ Tasa de Agendamiento Global: 10% vs 7% (Promedio)
-✅ Contactabilidad: 45% vs 32% (Promedio)
-
-¿Qué opinas de estos resultados? 💬
+Manual Trigger → Get row(s) → Loop Over Items → Code (Query Metabase) → IF → HTTP Request (WhatsApp) → Wait
 ```
 
-## 🔧 Comandos Útiles
-
-### Verificar estado de WhatsApp
-```bash
-curl -X GET "http://localhost:8080/instance/connectionState/mi_empresa" \
-  -H "apikey: MiClaveSecreta123"
+### Flujo 4: Solicitud Feedback
+```
+Manual Trigger → Get row(s) → Loop Over Items → Code → HTTP Request (WhatsApp) → Wait
 ```
 
-### Enviar mensaje de prueba
-```bash
-curl -X POST "http://localhost:8080/message/sendText/mi_empresa" \
-  -H "Content-Type: application/json" \
-  -H "apikey: MiClaveSecreta123" \
-  -d '{"number": "573174426388", "textMessage": {"text": "Hola, prueba!"}}'
-```
+## 🔧 Configuración
 
-### Ver logs de Evolution API
-```bash
-docker logs evolution_api --tail 50
-```
+1. Ver [configuracion-evolution-api.md](docs/configuracion-evolution-api.md)
+2. Ver [configuracion-n8n.md](docs/configuracion-n8n.md)
+3. Ver [configuracion-metabase.md](docs/configuracion-metabase.md)
 
-### Configurar webhook
-```bash
-curl -X POST "http://localhost:8080/webhook/set/mi_empresa" \
-  -H "Content-Type: application/json" \
-  -H "apikey: MiClaveSecreta123" \
-  -d '{
-    "url": "http://host.docker.internal:5678/webhook/whatsapp-incoming",
-    "enabled": true,
-    "events": ["MESSAGES_UPSERT"]
-  }'
-```
+## 📝 Data Tables en n8n
 
-## 📝 Notas Importantes
+### Directorio
+| Campo | Descripción |
+|-------|-------------|
+| enterprise_id | ID único del cliente en Metabase |
+| Telefono | Número de WhatsApp |
+| nombre_empresa | Nombre de la empresa |
+| nombre_contacto | Nombre en WhatsApp (pushName) |
 
-1. **ngrok** debe estar corriendo para que funcione el envío/recepción de WhatsApp
-2. Los **workflows deben estar activos** (switch en verde) en n8n
-3. Para agregar clientes, edita el **Data Table** "Directorio" en n8n
-4. Los mensajes solo muestran métricas donde el cliente supera el promedio
+## 👥 Notificaciones Slack
 
-## 🤝 Contribuciones
+Las notificaciones etiquetan a:
+- @Alejandra Barreto (U05UDSRUBUP)
+- @Diana María Ruiz (U019P0S2UKB)
 
-Las contribuciones son bienvenidas. Por favor, abre un issue primero para discutir los cambios propuestos.
+## 📅 Última actualización
 
-## 📄 Licencia
-
-MIT License
+Febrero 2026 - Agregado clasificador LLM, integración Metabase para consultas, recordatorio de visitas.
